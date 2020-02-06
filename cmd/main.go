@@ -13,6 +13,7 @@ func main() {
 	}
 
 	switch changer.Config.Mode {
+
 	case "configtxtojson":
 		var topLevelConfig *genesisconfig.TopLevel
 		topLevelConfig = genesisconfig.LoadTopLevel(changer.Config.General.ConfigTxPath)
@@ -21,6 +22,7 @@ func main() {
 				log.Fatalf("Error on printOrg: %s", err)
 			}
 		}
+
 	case "getblock":
 		block, err := changer.FetchBlock("block")
 		if err != nil {
@@ -30,5 +32,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 	}
 }
