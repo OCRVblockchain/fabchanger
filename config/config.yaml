@@ -1,0 +1,8 @@
+general:
+  identity: Admin
+  mspid: Org1MSP
+  channel: mychannel
+  connectionProfile: /home/vadim/git/fabchanger/config/connection.yaml
+  configtxpath: $HOME/git/fabchanger/config
+  OrgToJoinMSP: Org3MSP
+  myorg: Org1
