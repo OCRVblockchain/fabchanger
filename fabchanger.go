@@ -2,6 +2,7 @@ package fabchanger
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
 	fabricconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
@@ -12,6 +13,7 @@ import (
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/config"
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/encoder"
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/genesisconfig"
+	"io/ioutil"
 	"os"
 )
 
@@ -99,4 +101,42 @@ func (f *FabChanger) BlockToJSON(blockFileName string, b *common.Block) error {
 	}
 
 	return err
+}
+
+func (f *FabChanger) Merge(oldConfig, extendConfig, newFile string) error {
+	oldFileBytes, err := ioutil.ReadFile(oldConfig)
+	if err != nil {
+		return err
+	}
+	extendConfigBytes, err := ioutil.ReadFile(extendConfig)
+	if err != nil {
+		return err
+	}
+
+	var oldConfigJson = make(map[string]interface{})
+	err = json.Unmarshal(oldFileBytes, &oldConfigJson)
+	if err != nil {
+		return err
+	}
+	var extendConfigJson = make(map[string]interface{})
+	err = json.Unmarshal(extendConfigBytes, &extendConfigJson)
+	if err != nil {
+		return err
+	}
+	//[0]["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"]
+	//.(map[string]interface{}["payload"]
+	newConfigJSON := oldConfigJson
+	newConfigJSON["data"].(map[string]interface{})["data"].([]interface{})[0].(map[string]interface{})["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"].(map[string]interface{})["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
+
+	bytesJson, err := json.Marshal(newConfigJSON)
+	if err != nil {
+		return nil
+	}
+
+	err = ioutil.WriteFile(newFile, bytesJson, 0755)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
