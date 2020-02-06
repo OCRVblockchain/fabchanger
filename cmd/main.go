@@ -33,5 +33,10 @@ func main() {
 			log.Fatal(err)
 		}
 
+	case "merge":
+		err = changer.Merge("config.json", "extend.json", "new.json")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }
