@@ -55,5 +55,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+	case "sign":
+		err = changer.Sign("delta.pb")
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 }

@@ -8,10 +8,15 @@ import (
 	"github.com/hyperledger/fabric-protos-go/common"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	"github.com/hyperledger/fabric-sdk-go/pkg/client/ledger"
+	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
+	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fabricconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/hyperledger/fabric/common/configtx"
 	"github.com/hyperledger/fabric/common/tools/protolator"
 	"github.com/hyperledger/fabric/common/tools/protolator/protoext/ordererext"
+	"github.com/hyperledger/fabric/common/util"
+	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/config"
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/encoder"
@@ -71,6 +76,7 @@ func (f *FabChanger) FetchBlock() (*common.Block, error) {
 	defer sdk.Close()
 
 	clientChannelContext := sdk.ChannelContext(f.Config.Channel, fabsdk.WithUser(f.Config.Identity), fabsdk.WithOrg(f.Config.MyOrg))
+
 	ledgerClient, err := ledger.New(clientChannelContext)
 	if err != nil {
 		return nil, err
@@ -271,7 +277,7 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 	cu.ChannelId = f.Config.Channel
 
 	// insert delta to envelope
-	envelopeWrapper["config_update"] = cu
+	envelopeWrapper["data"].(map[string]interface{})["config_update"] = cu
 
 	outBytes, err := proto.Marshal(cu)
 	if err != nil {
@@ -294,4 +300,95 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 	}
 
 	return nil
+}
+
+func (f *FabChanger) Sign(channelTxFile string) error {
+
+	fabConfig := fabricconfig.FromFile(f.Config.General.ConnectionProfile)
+	sdk, err := fabsdk.New(fabConfig)
+	if err != nil {
+		return err
+	}
+	defer sdk.Close()
+
+	mspcli, err := mspclient.New(sdk.Context(), mspclient.WithOrg(f.Config.MyOrg))
+	if err != nil {
+		return err
+	}
+
+	fileData, err := ioutil.ReadFile(channelTxFile)
+	if err != nil {
+		return err
+	}
+
+	ctxEnv, err := protoutil.UnmarshalEnvelope(fileData)
+	if err != nil {
+		return err
+	}
+
+	signer, err := mspcli.GetSigningIdentity(f.Config.Identity)
+	if err != nil {
+		return err
+	}
+
+	sCtxEnv, err := f.sanityCheckAndSignConfigTx(ctxEnv, signer)
+	if err != nil {
+		return err
+	}
+
+	sCtxEnvData := protoutil.MarshalOrPanic(sCtxEnv)
+
+	return ioutil.WriteFile(channelTxFile, sCtxEnvData, 0660)
+}
+
+func (f *FabChanger) sanityCheckAndSignConfigTx(envConfigUpdate *cb.Envelope, signer msp.SigningIdentity) (*cb.Envelope, error) {
+
+	payload, err := protoutil.UnmarshalPayload(envConfigUpdate.Payload)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("bad payload, error: %s", err))
+	}
+
+	if payload.Header == nil || payload.Header.ChannelHeader == nil {
+		return nil, errors.New(fmt.Sprintf("bad header, error: %s", err))
+	}
+
+	ch, err := protoutil.UnmarshalChannelHeader(payload.Header.ChannelHeader)
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("could not unmarshall channel header, error: %s", err))
+	}
+
+	if ch.Type != int32(cb.HeaderType_CONFIG_UPDATE) {
+		return nil, errors.New("bad type")
+	}
+
+	if ch.ChannelId == "" {
+		return nil, errors.New("empty channel id")
+	}
+
+	if ch.ChannelId != f.Config.Channel {
+		return nil, errors.New(fmt.Sprintf("mismatched channel ID %s != %s", ch.ChannelId, f.Config.Channel))
+	}
+
+	configUpdateEnv, err := configtx.UnmarshalConfigUpdateEnvelope(payload.Data)
+	if err != nil {
+		return nil, errors.New("Bad config update env")
+	}
+
+	sigHeader, err := protoutil.NewSignatureHeader(signer)
+	if err != nil {
+		return nil, err
+	}
+
+	configSig := &cb.ConfigSignature{
+		SignatureHeader: protoutil.MarshalOrPanic(sigHeader),
+	}
+
+	configSig.Signature, err = signer.Sign(util.ConcatenateBytes(configSig.SignatureHeader, configUpdateEnv.ConfigUpdate))
+	if err != nil {
+		return nil, err
+	}
+
+	configUpdateEnv.Signatures = append(configUpdateEnv.Signatures, configSig)
+
+	return protoutil.CreateSignedEnvelope(cb.HeaderType_CONFIG_UPDATE, f.Config.Channel, signer, configUpdateEnv, 0, 0)
 }
