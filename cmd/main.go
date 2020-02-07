@@ -15,11 +15,11 @@ func main() {
 	switch changer.Config.Mode {
 
 	case "getblock":
-		err := changer.FetchBlock("block")
+		block, err := changer.FetchBlock()
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = changer.BlockToJSON("block", "config.json")
+		err = changer.BlockToJSON(block, "config.json")
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -3,6 +3,7 @@ package fabchanger
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	cb "github.com/hyperledger/fabric-protos-go/common"
@@ -18,6 +19,7 @@ import (
 	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxlator/update"
 	"io/ioutil"
 	"os"
+	"reflect"
 )
 
 type FabChanger struct {
@@ -33,52 +35,25 @@ func New() (*FabChanger, error) {
 	return &FabChanger{Config: configuration}, nil
 }
 
-func (f *FabChanger) FetchBlock(blockName string) error {
-	fabConfig := fabricconfig.FromFile(f.Config.General.ConnectionProfile)
-	sdk, err := fabsdk.New(fabConfig)
-	if err != nil {
-		return err
-	}
-	defer sdk.Close()
-
-	clientChannelContext := sdk.ChannelContext(f.Config.Channel, fabsdk.WithUser(f.Config.Identity), fabsdk.WithOrg(f.Config.MyOrg))
-	ledgerClient, err := ledger.New(clientChannelContext)
-	if err != nil {
-		return err
-	}
-
-	block, err := ledgerClient.QueryConfigBlock()
-	if err != nil {
-		return err
-	}
-
-	b, err := proto.Marshal(block)
-	if err != nil {
-		return err
-	}
-
-	if err = ioutil.WriteFile(blockName, b, 0644); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (f *FabChanger) ConfigTxToJSON(JSONFileName string, t *genesisconfig.TopLevel) error {
+
 	for _, org := range t.Organizations {
 		if org.Name == f.Config.General.OrgToJoinMSP {
 			og, err := encoder.NewOrdererOrgGroup(org)
 			if err != nil {
 				return errors.Wrapf(err, "bad org definition for org %s", org.Name)
 			}
-			file, err := os.OpenFile(JSONFileName, os.O_RDWR|os.O_CREATE, 0755)
+
+			newfile, err := os.OpenFile(JSONFileName, os.O_RDWR|os.O_CREATE, 0755)
 			if err != nil {
 				return err
 			}
-			if err := protolator.DeepMarshalJSON(file, &ordererext.DynamicOrdererOrgGroup{ConfigGroup: og}); err != nil {
+
+			if err := protolator.DeepMarshalJSON(newfile, &ordererext.DynamicOrdererOrgGroup{ConfigGroup: og}); err != nil {
 				return errors.Wrapf(err, "malformed org definition for org: %s", org.Name)
 			}
-			if err := file.Close(); err != nil {
+
+			if err := newfile.Close(); err != nil {
 				return err
 			}
 			return nil
@@ -87,32 +62,66 @@ func (f *FabChanger) ConfigTxToJSON(JSONFileName string, t *genesisconfig.TopLev
 	return errors.Errorf("organization %s not found", f.Config.General.OrgToJoinMSP)
 }
 
-func (f *FabChanger) BlockToJSON(blockFileName, newFileName string) error {
-
-	var block *common.Block
-
-	blockFileBytes, err := ioutil.ReadFile(blockFileName)
+func (f *FabChanger) FetchBlock() (*common.Block, error) {
+	fabConfig := fabricconfig.FromFile(f.Config.General.ConnectionProfile)
+	sdk, err := fabsdk.New(fabConfig)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	defer sdk.Close()
+
+	clientChannelContext := sdk.ChannelContext(f.Config.Channel, fabsdk.WithUser(f.Config.Identity), fabsdk.WithOrg(f.Config.MyOrg))
+	ledgerClient, err := ledger.New(clientChannelContext)
+	if err != nil {
+		return nil, err
 	}
 
-	err = proto.Unmarshal(blockFileBytes, block)
+	block, err := ledgerClient.QueryConfigBlock()
 	if err != nil {
-		return err
+		return nil, err
 	}
+
+	b, err := proto.Marshal(block)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = ioutil.WriteFile("block.pb", b, 0644); err != nil {
+		return nil, err
+	}
+
+	return block, nil
+}
+
+func (f *FabChanger) BlockToJSON(block *common.Block, newFileName string) error {
 
 	var buffer bytes.Buffer
-	err = protolator.DeepMarshalJSON(&buffer, block)
+
+	err := protolator.DeepMarshalJSON(&buffer, block)
 	if err != nil {
 		return err
 	}
 
-	file, err := os.OpenFile(blockFileName, os.O_RDWR|os.O_CREATE, 0755)
+	var blockJSON = make(map[string]interface{})
+	err = json.Unmarshal(buffer.Bytes(), &blockJSON)
 	if err != nil {
 		return err
 	}
 
-	_, err = buffer.WriteTo(file)
+	blockJSON = blockJSON["data"].(map[string]interface{})["data"].([]interface{})[0].(map[string]interface{})["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"].(map[string]interface{})
+	blockJSONBytes, err := json.Marshal(blockJSON)
+	if err != nil {
+		return err
+	}
+
+	bufferedJSON := bytes.NewBuffer(blockJSONBytes)
+
+	file, err := os.OpenFile(newFileName, os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+
+	_, err = bufferedJSON.WriteTo(file)
 
 	if err := file.Close(); err != nil {
 		return err
@@ -133,8 +142,12 @@ func (f *FabChanger) Merge(mode, oldConfig, extendConfig, newFile string) error 
 
 	var oldConfigJson = make(map[string]interface{})
 	err = json.Unmarshal(oldFileBytes, &oldConfigJson)
-	if err != nil {
-		return err
+
+	if oldConfigJson["data"] != nil {
+		oldConfigJson = oldConfigJson["data"].(map[string]interface{})["data"].([]interface{})[0].(map[string]interface{})["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"].(map[string]interface{})
+		if err != nil {
+			return errors.New(fmt.Sprintf("can't trim map, error:", err))
+		}
 	}
 	var extendConfigJson = make(map[string]interface{})
 	err = json.Unmarshal(extendConfigBytes, &extendConfigJson)
@@ -146,9 +159,9 @@ func (f *FabChanger) Merge(mode, oldConfig, extendConfig, newFile string) error 
 	newConfigJSON := oldConfigJson
 
 	if mode == "org" {
-		newConfigJSON["data"].(map[string]interface{})["data"].([]interface{})[0].(map[string]interface{})["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"].(map[string]interface{})["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
 	} else if mode == "orderer" {
-		newConfigJSON["data"].(map[string]interface{})["data"].([]interface{})[0].(map[string]interface{})["payload"].(map[string]interface{})["data"].(map[string]interface{})["config"].(map[string]interface{})["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
 	} else {
 		return errors.New("Mode not specified")
 	}
@@ -168,12 +181,16 @@ func (f *FabChanger) Merge(mode, oldConfig, extendConfig, newFile string) error 
 
 func (f *FabChanger) JSONToProtoConfig(source, newName string) error {
 
-	var msg *common.Config
-
-	file, err := os.Open(source)
+	file, err := os.OpenFile(source, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return err
 	}
+
+	msgType := proto.MessageType("common.Config")
+	if msgType == nil {
+		return errors.Errorf("message of type %s unknown", msgType)
+	}
+	msg := reflect.New(msgType.Elem()).Interface().(proto.Message)
 
 	err = protolator.DeepUnmarshalJSON(file, msg)
 	if err != nil {
@@ -207,6 +224,10 @@ func (f *FabChanger) JSONToProtoConfig(source, newName string) error {
 }
 
 func (f *FabChanger) ComputeDelta(original, updated, output string) error {
+
+	var envelopeWrapper = map[string]interface{}{"payload": map[string]interface{}{"header": map[string]interface{}{"channel_header": map[string]interface{}{"channel_id": f.Config.Channel, "type": 2}},
+		"data": map[string]interface{}{}}}
+
 	originalFile, err := os.Open(original)
 	if err != nil {
 		return err
@@ -248,6 +269,9 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 	}
 
 	cu.ChannelId = f.Config.Channel
+
+	// insert delta to envelope
+	envelopeWrapper["config_update"] = cu
 
 	outBytes, err := proto.Marshal(cu)
 	if err != nil {
