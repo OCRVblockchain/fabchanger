@@ -14,6 +14,16 @@ func main() {
 
 	switch changer.Config.Mode {
 
+	case "getblock":
+		err := changer.FetchBlock("block")
+		if err != nil {
+			log.Fatal(err)
+		}
+		err = changer.BlockToJSON("block", "config.json")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	case "configtxtojson":
 		var topLevelConfig *genesisconfig.TopLevel
 		topLevelConfig = genesisconfig.LoadTopLevel(changer.Config.General.ConfigTxPath)
@@ -23,18 +33,25 @@ func main() {
 			}
 		}
 
-	case "getblock":
-		block, err := changer.FetchBlock("block")
-		if err != nil {
-			log.Fatal(err)
-		}
-		err = changer.BlockToJSON("config.json", block)
+	case "merge":
+		err = changer.Merge("org", "config.json", "extend.json", "new.json")
 		if err != nil {
 			log.Fatal(err)
 		}
 
-	case "merge":
-		err = changer.Merge("config.json", "extend.json", "new.json")
+	case "jsontoproto":
+		err = changer.JSONToProtoConfig("config.json", "old.pb")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		err = changer.JSONToProtoConfig("new.json", "new.pb")
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	case "delta":
+		err = changer.ComputeDelta("old.pb", "new.pb", "delta.pb")
 		if err != nil {
 			log.Fatal(err)
 		}
