@@ -12,12 +12,12 @@ import (
 	"strings"
 
 	"github.com/hyperledger/fabric/bccsp/factory"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/chaincode"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/channel"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/common"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/lifecycle"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/node"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/peer/version"
+	"github.com/OCRVblockchain/fabchanger/peer/chaincode"
+	"github.com/OCRVblockchain/fabchanger/peer/channel"
+	"github.com/OCRVblockchain/fabchanger/peer/common"
+	"github.com/OCRVblockchain/fabchanger/peer/lifecycle"
+	"github.com/OCRVblockchain/fabchanger/peer/node"
+	"github.com/OCRVblockchain/fabchanger/peer/version"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )

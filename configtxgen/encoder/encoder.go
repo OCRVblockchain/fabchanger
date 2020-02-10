@@ -7,6 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 package encoder
 
 import (
+	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
+	"github.com/OCRVblockchain/fabchanger/configtxlator/update"
+	"github.com/OCRVblockchain/fabchanger/pkg/identity"
 	"github.com/golang/protobuf/proto"
 	cb "github.com/hyperledger/fabric-protos-go/common"
 	pb "github.com/hyperledger/fabric-protos-go/peer"
@@ -19,9 +22,6 @@ import (
 	"github.com/hyperledger/fabric/msp"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/genesisconfig"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxlator/update"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/pkg/identity"
 )
 
 const (
