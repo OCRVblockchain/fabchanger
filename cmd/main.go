@@ -2,8 +2,8 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/genesisconfig"
+	"github.com/OCRVblockchain/fabchanger"
+	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
 )
 
 func main() {
@@ -56,8 +56,14 @@ func main() {
 			log.Fatal(err)
 		}
 
+	case "wrap":
+		err = changer.Wrap("delta.pb")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 	case "sign":
-		err = changer.Sign("delta.pb")
+		err = changer.Sign("wrappedDelta.pb")
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -11,17 +11,19 @@ import (
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fabricconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
+	mspmgmt "github.com/hyperledger/fabric/msp/mgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
+	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/configtx"
 	"github.com/hyperledger/fabric/common/tools/protolator"
 	"github.com/hyperledger/fabric/common/tools/protolator/protoext/ordererext"
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/config"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/encoder"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxgen/genesisconfig"
-	"gitlab.sch.ocrv.com.rzd/blockchain/fabchanger/configtxlator/update"
+	"github.com/OCRVblockchain/fabchanger/config"
+	"github.com/OCRVblockchain/fabchanger/configtxgen/encoder"
+	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
+	"github.com/OCRVblockchain/fabchanger/configtxlator/update"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -231,8 +233,7 @@ func (f *FabChanger) JSONToProtoConfig(source, newName string) error {
 
 func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 
-	var envelopeWrapper = map[string]interface{}{"payload": map[string]interface{}{"header": map[string]interface{}{"channel_header": map[string]interface{}{"channel_id": f.Config.Channel, "type": 2}},
-		"data": map[string]interface{}{}}}
+	//var envelopeWrapper = map[string]interface{}{"payload": map[string]interface{}{"header": map[string]interface{}{"channel_header": map[string]interface{}{"channel_id": f.Config.Channel, "type": 2}}}}
 
 	originalFile, err := os.Open(original)
 	if err != nil {
@@ -276,9 +277,6 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 
 	cu.ChannelId = f.Config.Channel
 
-	// insert delta to envelope
-	envelopeWrapper["data"].(map[string]interface{})["config_update"] = cu
-
 	outBytes, err := proto.Marshal(cu)
 	if err != nil {
 		return errors.Wrapf(err, "error marshaling computed config update")
@@ -296,6 +294,79 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 		return err
 	}
 	if err := outputFile.Close(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (f *FabChanger) Wrap(channelTxFile string) error {
+	fileData, err := ioutil.ReadFile(channelTxFile)
+	if err != nil {
+		return err
+	}
+
+	var ConfigUpdate = &common.ConfigUpdate{}
+	err = proto.Unmarshal(fileData, ConfigUpdate)
+	if err != nil {
+		return err
+	}
+
+	var buffer bytes.Buffer
+
+	err = protolator.DeepMarshalJSON(&buffer, ConfigUpdate)
+	if err != nil {
+		return err
+	}
+
+	var wrappedDelta map[string]interface{}
+	err = json.Unmarshal(buffer.Bytes(), &wrappedDelta)
+	if err != nil {
+		return err
+	}
+
+	var envelopeWrapper = map[string]interface{}{"payload": map[string]interface{}{"header": map[string]interface{}{"channel_header": map[string]interface{}{"channel_id": f.Config.Channel, "type": 2}}}}
+	envelopeWrapper["payload"].(map[string]interface{})["data"] = map[string]interface{}{"config_update": wrappedDelta}
+
+	envelopeWrapperJSON, err := json.Marshal(envelopeWrapper)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.OpenFile("wrappedDelta.json", os.O_RDWR|os.O_CREATE, 0755)
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(envelopeWrapperJSON)
+	if err != nil {
+		return err
+	}
+
+	var bufferWithEnvelope = bytes.NewBuffer(envelopeWrapperJSON)
+
+	msgType := proto.MessageType("common.Envelope")
+	if msgType == nil {
+		return errors.Errorf("message of type %s unknown", msgType)
+	}
+	msg := reflect.New(msgType.Elem()).Interface().(proto.Message)
+
+	err = protolator.DeepUnmarshalJSON(bufferWithEnvelope, msg)
+	if err != nil {
+		return err
+	}
+
+	marshaledEnvelope, err := proto.Marshal(msg)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile("wrappedDelta.pb", marshaledEnvelope, 0755)
+	if err != nil {
+		return err
+	}
+
+	if err := file.Close(); err != nil {
 		return err
 	}
 
@@ -343,6 +414,14 @@ func (f *FabChanger) Sign(channelTxFile string) error {
 
 func (f *FabChanger) sanityCheckAndSignConfigTx(envConfigUpdate *cb.Envelope, signer msp.SigningIdentity) (*cb.Envelope, error) {
 
+	newsigner, err := mspmgmt.GetLocalMSP(factory.GetDefault()).GetDefaultSigningIdentity()
+	if err != nil {
+		return nil, errors.WithMessage(err, "error obtaining the default signing identity")
+	}
+	if err != nil {
+		return nil, errors.New(fmt.Sprintf("bad signer, error: %s", err))
+	}
+
 	payload, err := protoutil.UnmarshalPayload(envConfigUpdate.Payload)
 	if err != nil {
 		return nil, errors.New(fmt.Sprintf("bad payload, error: %s", err))
@@ -374,7 +453,7 @@ func (f *FabChanger) sanityCheckAndSignConfigTx(envConfigUpdate *cb.Envelope, si
 		return nil, errors.New("Bad config update env")
 	}
 
-	sigHeader, err := protoutil.NewSignatureHeader(signer)
+	sigHeader, err := protoutil.NewSignatureHeader(newsigner)
 	if err != nil {
 		return nil, err
 	}
@@ -383,12 +462,12 @@ func (f *FabChanger) sanityCheckAndSignConfigTx(envConfigUpdate *cb.Envelope, si
 		SignatureHeader: protoutil.MarshalOrPanic(sigHeader),
 	}
 
-	configSig.Signature, err = signer.Sign(util.ConcatenateBytes(configSig.SignatureHeader, configUpdateEnv.ConfigUpdate))
+	configSig.Signature, err = newsigner.Sign(util.ConcatenateBytes(configSig.SignatureHeader, configUpdateEnv.ConfigUpdate))
 	if err != nil {
 		return nil, err
 	}
 
 	configUpdateEnv.Signatures = append(configUpdateEnv.Signatures, configSig)
 
-	return protoutil.CreateSignedEnvelope(cb.HeaderType_CONFIG_UPDATE, f.Config.Channel, signer, configUpdateEnv, 0, 0)
+	return protoutil.CreateSignedEnvelope(cb.HeaderType_CONFIG_UPDATE, f.Config.Channel, newsigner, configUpdateEnv, 0, 0)
 }
