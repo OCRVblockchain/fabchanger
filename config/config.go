@@ -13,6 +13,7 @@ type Config struct {
 	Join   string
 	Output string
 	Input  string
+	Merge  string
 }
 
 type General struct {
@@ -30,6 +31,7 @@ func GetConfig() (*Config, error) {
 	var Configuration *Config
 	mode := flag.String("mode", "", "operating mode")
 	input := flag.String("f", "", "input file name")
+	merge := flag.String("merge", "", "file to merge with")
 	output := flag.String("o", "", "output file name")
 	join := flag.String("join", "", "join org or orderer")
 	flag.Parse()
@@ -55,5 +57,6 @@ func GetConfig() (*Config, error) {
 	Configuration.Input = *input
 	Configuration.Output = *output
 	Configuration.Join = *join
+	Configuration.Merge = *merge
 	return Configuration, nil
 }
