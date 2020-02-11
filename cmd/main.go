@@ -40,30 +40,25 @@ func main() {
 		}
 
 	case "jsontoproto":
-		err = changer.JSONToProtoConfig("config.json", "old.pb")
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = changer.JSONToProtoConfig("new.json", "new.pb")
+		err = changer.JSONToProtoConfig(changer.Config.Input, changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	case "delta":
-		err = changer.ComputeDelta("old.pb", "new.pb", "delta.pb")
+		err = changer.ComputeDelta(changer.Config.Input, changer.Config.CompareWith, changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	case "wrap":
-		err = changer.Wrap("delta.pb")
+		err = changer.Wrap(changer.Config.Input, changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
 
 	case "sign":
-		err = changer.Sign("wrappedDelta.pb")
+		err = changer.Sign(changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
