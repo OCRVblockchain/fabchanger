@@ -161,7 +161,7 @@ func (f *FabChanger) BlockToJSON(block *common.Block, newFileName string) error 
 	return err
 }
 
-func (f *FabChanger) Merge(mode, oldConfig, extendConfig, newFile string) error {
+func (f *FabChanger) Merge(oldConfig, extendConfig, newFile string) error {
 	oldFileBytes, err := ioutil.ReadFile(oldConfig)
 	if err != nil {
 		return err
@@ -189,12 +189,12 @@ func (f *FabChanger) Merge(mode, oldConfig, extendConfig, newFile string) error 
 	//.(map[string]interface{}["payload"]
 	newConfigJSON := oldConfigJson
 
-	if mode == "org" {
+	if f.Config.Join == "org" {
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
-	} else if mode == "orderer" {
+	} else if f.Config.Join == "orderer" {
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
 	} else {
-		return errors.New("Mode not specified")
+		return errors.New("Join mode (--join) not specified")
 	}
 
 	bytesJson, err := json.Marshal(newConfigJSON)
