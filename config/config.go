@@ -9,7 +9,10 @@ import (
 
 type Config struct {
 	General
-	Mode string
+	Mode   string
+	Join   string
+	Output string
+	Input  string
 }
 
 type General struct {
@@ -26,6 +29,9 @@ func GetConfig() (*Config, error) {
 
 	var Configuration *Config
 	mode := flag.String("mode", "", "operating mode")
+	input := flag.String("f", "", "input file name")
+	output := flag.String("o", "", "output file name")
+	join := flag.String("join", "", "join org or orderer")
 	flag.Parse()
 
 	if *mode == "" {
@@ -46,5 +52,8 @@ func GetConfig() (*Config, error) {
 		return nil, errors.New(fmt.Sprintf("unable to decode into struct, %v", err))
 	}
 	Configuration.Mode = *mode
+	Configuration.Input = *input
+	Configuration.Output = *output
+	Configuration.Join = *join
 	return Configuration, nil
 }
