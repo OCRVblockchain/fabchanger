@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/OCRVblockchain/fabchanger/config"
+	"github.com/OCRVblockchain/fabchanger/configtxgen/encoder"
+	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
+	"github.com/OCRVblockchain/fabchanger/configtxlator/update"
 	"github.com/golang/protobuf/proto"
 	"github.com/hyperledger/fabric-protos-go/common"
 	cb "github.com/hyperledger/fabric-protos-go/common"
@@ -11,19 +15,15 @@ import (
 	mspclient "github.com/hyperledger/fabric-sdk-go/pkg/client/msp"
 	"github.com/hyperledger/fabric-sdk-go/pkg/common/providers/msp"
 	fabricconfig "github.com/hyperledger/fabric-sdk-go/pkg/core/config"
-	mspmgmt "github.com/hyperledger/fabric/msp/mgmt"
 	"github.com/hyperledger/fabric-sdk-go/pkg/fabsdk"
 	"github.com/hyperledger/fabric/bccsp/factory"
 	"github.com/hyperledger/fabric/common/configtx"
 	"github.com/hyperledger/fabric/common/tools/protolator"
 	"github.com/hyperledger/fabric/common/tools/protolator/protoext/ordererext"
 	"github.com/hyperledger/fabric/common/util"
+	mspmgmt "github.com/hyperledger/fabric/msp/mgmt"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
-	"github.com/OCRVblockchain/fabchanger/config"
-	"github.com/OCRVblockchain/fabchanger/configtxgen/encoder"
-	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
-	"github.com/OCRVblockchain/fabchanger/configtxlator/update"
 	"io/ioutil"
 	"os"
 	"reflect"
@@ -43,30 +43,53 @@ func New() (*FabChanger, error) {
 }
 
 func (f *FabChanger) ConfigTxToJSON(JSONFileName string, t *genesisconfig.TopLevel) error {
+	if f.Config.Join == "org" {
+		for _, org := range t.Organizations {
+			if org.Name == f.Config.General.OrgToJoinMSP {
+				og, err := encoder.NewOrdererOrgGroup(org)
+				if err != nil {
+					return errors.Wrapf(err, "bad org definition for org %s", org.Name)
+				}
 
-	for _, org := range t.Organizations {
-		if org.Name == f.Config.General.OrgToJoinMSP {
-			og, err := encoder.NewOrdererOrgGroup(org)
-			if err != nil {
-				return errors.Wrapf(err, "bad org definition for org %s", org.Name)
-			}
+				newfile, err := os.OpenFile(JSONFileName, os.O_RDWR|os.O_CREATE, 0755)
+				if err != nil {
+					return err
+				}
 
-			newfile, err := os.OpenFile(JSONFileName, os.O_RDWR|os.O_CREATE, 0755)
-			if err != nil {
-				return err
-			}
+				if err := protolator.DeepMarshalJSON(newfile, &ordererext.DynamicOrdererOrgGroup{ConfigGroup: og}); err != nil {
+					return errors.Wrapf(err, "malformed org definition for org: %s", org.Name)
+				}
 
-			if err := protolator.DeepMarshalJSON(newfile, &ordererext.DynamicOrdererOrgGroup{ConfigGroup: og}); err != nil {
-				return errors.Wrapf(err, "malformed org definition for org: %s", org.Name)
+				if err := newfile.Close(); err != nil {
+					return err
+				}
+				return nil
 			}
-
-			if err := newfile.Close(); err != nil {
-				return err
-			}
-			return nil
 		}
+	} else if f.Config.Join == "orderer" {
+
+		og, err := encoder.NewOrdererGroup(t.Orderer)
+		if err != nil {
+			return errors.Wrapf(err, "bad org definition for orderer")
+		}
+
+		newfile, err := os.OpenFile(JSONFileName, os.O_RDWR|os.O_CREATE, 0755)
+		if err != nil {
+			return err
+		}
+
+		if err := protolator.DeepMarshalJSON(newfile, &ordererext.DynamicOrdererGroup{ConfigGroup: og}); err != nil {
+			return errors.Wrapf(err, "malformed org definition for orderer")
+		}
+
+		if err := newfile.Close(); err != nil {
+			return err
+		}
+		return nil
 	}
+
 	return errors.Errorf("organization %s not found", f.Config.General.OrgToJoinMSP)
+
 }
 
 func (f *FabChanger) FetchBlock() (*common.Block, error) {
