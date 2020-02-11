@@ -192,7 +192,10 @@ func (f *FabChanger) Merge(oldConfig, extendConfig, newFile string) error {
 	if f.Config.Join == "org" {
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
 	} else if f.Config.Join == "orderer" {
-		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"] = extendConfigJson["values"]
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["BatchSize"] = extendConfigJson["values"].(map[string]interface{})["BatchSize"]
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["BatchTimeout"] = extendConfigJson["values"].(map[string]interface{})["BatchTimeout"]
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ChannelRestrictions"] = extendConfigJson["values"].(map[string]interface{})["ChannelRestrictions"]
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ConsensusType"] = extendConfigJson["values"].(map[string]interface{})["ConsensusType"]
 	} else {
 		return errors.New("Join mode (--join) not specified")
 	}
