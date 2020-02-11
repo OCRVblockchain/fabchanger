@@ -192,7 +192,7 @@ func (f *FabChanger) Merge(oldConfig, extendConfig, newFile string) error {
 	if f.Config.Join == "org" {
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Application"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
 	} else if f.Config.Join == "orderer" {
-		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["groups"].(map[string]interface{})[f.Config.OrgToJoinMSP] = extendConfigJson
+		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"] = extendConfigJson["values"]
 	} else {
 		return errors.New("Join mode (--join) not specified")
 	}
@@ -323,7 +323,7 @@ func (f *FabChanger) ComputeDelta(original, updated, output string) error {
 	return nil
 }
 
-func (f *FabChanger) Wrap(channelTxFile string) error {
+func (f *FabChanger) Wrap(channelTxFile, output string) error {
 	fileData, err := ioutil.ReadFile(channelTxFile)
 	if err != nil {
 		return err
@@ -356,7 +356,7 @@ func (f *FabChanger) Wrap(channelTxFile string) error {
 		return err
 	}
 
-	file, err := os.OpenFile("wrappedDelta.json", os.O_RDWR|os.O_CREATE, 0755)
+	file, err := os.OpenFile(output, os.O_RDWR|os.O_CREATE, 0755)
 	if err != nil {
 		return err
 	}
