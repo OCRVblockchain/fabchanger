@@ -1,9 +1,9 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/OCRVblockchain/fabchanger"
 	"github.com/OCRVblockchain/fabchanger/configtxgen/genesisconfig"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		err = changer.BlockToJSON(block, "config.json")
+		err = changer.BlockToJSON(block, changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -28,7 +28,7 @@ func main() {
 		var topLevelConfig *genesisconfig.TopLevel
 		topLevelConfig = genesisconfig.LoadTopLevel(changer.Config.General.ConfigTxPath)
 		if changer.Config.General.OrgToJoinMSP != "" {
-			if err := changer.ConfigTxToJSON("extend.json", topLevelConfig); err != nil {
+			if err := changer.ConfigTxToJSON(changer.Config.Output, topLevelConfig); err != nil {
 				log.Fatalf("Error on printOrg: %s", err)
 			}
 		}
