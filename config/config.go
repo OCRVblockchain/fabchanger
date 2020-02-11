@@ -9,11 +9,12 @@ import (
 
 type Config struct {
 	General
-	Mode   string
-	Join   string
-	Output string
-	Input  string
-	Merge  string
+	Mode        string
+	Join        string
+	Output      string
+	Input       string
+	Merge       string
+	CompareWith string
 }
 
 type General struct {
@@ -34,6 +35,7 @@ func GetConfig() (*Config, error) {
 	merge := flag.String("merge", "", "file to merge with")
 	output := flag.String("o", "", "output file name")
 	join := flag.String("join", "", "join org or orderer")
+	comparewith := flag.String("comparewith", "", "protobuf file to compare original with")
 	flag.Parse()
 
 	if *mode == "" {
@@ -58,5 +60,6 @@ func GetConfig() (*Config, error) {
 	Configuration.Output = *output
 	Configuration.Join = *join
 	Configuration.Merge = *merge
+	Configuration.CompareWith = *comparewith
 	return Configuration, nil
 }
