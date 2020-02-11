@@ -72,11 +72,11 @@ func AddPolicies(cg *cb.ConfigGroup, policyMap map[string]*genesisconfig.Policy,
 	switch {
 	case policyMap == nil:
 		return errors.Errorf("no policies defined")
-	case policyMap[channelconfig.AdminsPolicyKey] == nil:
+	case policyMap[channelconfig.AdminsPolicyKey] == nil && policyMap["admins"] == nil:
 		return errors.Errorf("no Admins policy defined")
-	case policyMap[channelconfig.ReadersPolicyKey] == nil:
+	case policyMap[channelconfig.ReadersPolicyKey] == nil && policyMap["readers"] == nil:
 		return errors.Errorf("no Readers policy defined")
-	case policyMap[channelconfig.WritersPolicyKey] == nil:
+	case policyMap[channelconfig.WritersPolicyKey] == nil && policyMap["writers"] == nil:
 		return errors.Errorf("no Writers policy defined")
 	}
 
@@ -120,6 +120,7 @@ func AddPolicies(cg *cb.ConfigGroup, policyMap map[string]*genesisconfig.Policy,
 // value which is set to "/Channel/Orderer/Admins".
 func NewChannelGroup(conf *genesisconfig.Profile) (*cb.ConfigGroup, error) {
 	channelGroup := protoutil.NewConfigGroup()
+
 	if err := AddPolicies(channelGroup, conf.Policies, channelconfig.AdminsPolicyKey); err != nil {
 		return nil, errors.Wrapf(err, "error adding policies to channel group")
 	}
