@@ -195,7 +195,11 @@ func (f *FabChanger) Merge(oldConfig, extendConfig, newFile string) error {
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["BatchSize"] = extendConfigJson["values"].(map[string]interface{})["BatchSize"]
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["BatchTimeout"] = extendConfigJson["values"].(map[string]interface{})["BatchTimeout"]
 		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ChannelRestrictions"] = extendConfigJson["values"].(map[string]interface{})["ChannelRestrictions"]
-		newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ConsensusType"] = extendConfigJson["values"].(map[string]interface{})["ConsensusType"]
+		consenters := extendConfigJson["values"].(map[string]interface{})["ConsensusType"].(map[string]interface{})["value"].(map[string]interface{})["metadata"].(map[string]interface{})["consenters"].([]interface{})
+
+		for _, consenter := range consenters {
+			newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ConsensusType"].(map[string]interface{})["value"].(map[string]interface{})["metadata"].(map[string]interface{})["consenters"] = append(newConfigJSON["channel_group"].(map[string]interface{})["groups"].(map[string]interface{})["Orderer"].(map[string]interface{})["values"].(map[string]interface{})["ConsensusType"].(map[string]interface{})["value"].(map[string]interface{})["metadata"].(map[string]interface{})["consenters"].([]interface{}), consenter)
+		}
 	} else {
 		return errors.New("Join mode (--join) not specified")
 	}
