@@ -401,9 +401,6 @@ loop:
 				logger.Infof("Orderer.EtcdRaft.Options.SnapshotIntervalSize unset, setting to %v", genesisDefaults.Orderer.EtcdRaft.Options.SnapshotIntervalSize)
 				ord.EtcdRaft.Options.SnapshotIntervalSize = genesisDefaults.Orderer.EtcdRaft.Options.SnapshotIntervalSize
 
-			case len(ord.EtcdRaft.Consenters) == 0:
-				logger.Panicf("%s configuration did not specify any consenter", EtcdRaft)
-
 			default:
 				break second_loop
 			}
