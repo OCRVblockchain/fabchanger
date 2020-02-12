@@ -55,6 +55,6 @@
         
          export CORE_PEER_LOCALMSPID="OrdererMSP"
          export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/users/Admin@example.com/msp
-         ./sign.sh cli commit
+         ./sign.sh cli commit orderer.org.ru:7050
          
 You can sign not only from the cli container, just replace first script arg `./sign.sh <container> <action>`
