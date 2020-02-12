@@ -1,3 +1,10 @@
+ 
+## Fabchanger
+ 
+ Tool for _easy_ reconfiguration of Hyperledger Fabric network by committing a new configuration transaction
+
+<br/>
+
 #### Connect new organization
   1. Create `configtx.yaml` in ./config dir using `configtx.yaml.org.sample` as sample and set config values in `/config.yaml`
   2. Run command:
