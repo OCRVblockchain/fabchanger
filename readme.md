@@ -1,7 +1,7 @@
  
 ## Fabchanger
  
- Tool for _easy_ reconfiguration of Hyperledger Fabric network by committing a new configuration transaction
+ Tool for _easy_ Hyperledger Fabric network reconfiguration by committing a new configuration transaction
 
 <br/>
 
