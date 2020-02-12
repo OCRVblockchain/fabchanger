@@ -2,7 +2,7 @@ general:
   identity: Admin
   mspid: Org1MSP
   channel: mychannel
-  connectionProfile: /home/vadim/git/fabchanger/config/connection.yaml
+  connectionProfile: /home/vadim/git/fabric-samples/first-network/connection-org1.yaml
   configtxpath: $HOME/git/fabchanger/config
-  OrgToJoinMSP: Org3MSP
+  OrgToJoinMSP: Org3MSP #OrdererOrg
   myorg: Org1
