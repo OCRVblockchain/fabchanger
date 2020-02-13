@@ -12,7 +12,7 @@
       
          export PATH=$PATH:~/bin
          
-      Edit `crypto-config.yaml` for your new configuration
+      Edit `config/crypto-config.yaml` for your new configuration
      
       Generate crypto materials:
         

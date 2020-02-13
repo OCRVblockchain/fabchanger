@@ -7,4 +7,4 @@ which cryptogen
     rm -Rf crypto-config
   fi
   set -x
-  cryptogen generate --config=./crypto-config.yaml
+  cryptogen generate --config=./config/crypto-config.yaml
