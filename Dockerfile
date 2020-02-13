@@ -9,8 +9,8 @@ FROM alpine:3.9 as production-stage
 WORKDIR /app
 # for this stage copy to current dir Fabric /bin directory with cryptogen utility
 COPY generate.sh .
-COPY crypto-config.yaml .
 COPY sign.sh .
+COPY config/crypto-config.yaml .
 COPY bin /app/bin
 COPY --from=build-stage /app/fabchanger .
 COPY --from=build-stage /app/config .
