@@ -1,5 +1,6 @@
 #!/bin/sh
 if [ $2 = "commit" ]; then
+  docker cp wrappedDelta.pb $1:/opt/gopath/src/github.com/hyperledger/fabric/peer/wrapped.pb
   docker exec $1 peer channel update -f wrapped.pb -c $CHANNEL_NAME -o $3 --tls --cafile $ORDERER_CA
 else
   docker cp wrappedDelta.pb $1:/opt/gopath/src/github.com/hyperledger/fabric/peer/wrapped.pb
