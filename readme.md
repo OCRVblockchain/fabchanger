@@ -6,12 +6,26 @@
 <br/>
 
 #### Connect new organization
-  1. Create `configtx.yaml` in ./config dir using `configtx.yaml.org.sample` as sample and set config values in `/config.yaml`
-  2. Run command:
+  1. Generate new crypto materials
+  
+      Add path to cryptogen bin to PATH env: 
+      
+         export PATH=$PATH:~/bin
+         
+      Edit `crypto-config.yaml` for your new configuration
+     
+      Generate crypto materials:
+        
+         ./generate.sh
+      
+      Copy generated crypto materials to your main `crypto-config` directory
+  
+  2. Create `configtx.yaml` in ./config dir using `configtx.yaml.org.sample` as sample and set config values in `/config.yaml`
+  3. Run command:
       
          ./connectOrg.sh
   
-  3. Sign configuration transaction
+  4. Sign configuration transaction
       
       Export environment variables:
   
@@ -32,12 +46,25 @@
          
 <br/><br/>         
 #### Connect new RAFT orderer
-  1. Create `configtx.yaml` in ./config dir using `configtx.yaml.orderer.sample` as sample and set config values in `/config.yaml`
-  2. Run command:
+   1. Generate new crypto materials
+     
+         Add path to cryptogen bin to PATH env: 
+         
+            export PATH=$PATH:~/bin
+            
+         Edit `crypto-config.yaml` for your new configuration
+        
+         Generate crypto materials:
+           
+            ./generate.sh
+         
+         Copy generated crypto materials to your main `crypto-config` directory
+  2. Create `configtx.yaml` in ./config dir using `configtx.yaml.orderer.sample` as sample and set config values in `/config.yaml`
+  3. Run command:
       
          ./connectOrderer.sh
   
-  3. Sign configuration transaction
+  4. Sign configuration transaction
       
       Export environment variables:
   
