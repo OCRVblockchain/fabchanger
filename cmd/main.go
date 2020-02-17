@@ -58,7 +58,7 @@ func main() {
 		}
 
 	case "sign":
-		err = changer.Sign(changer.Config.Output)
+		err = changer.Sign(changer.Config.Input, changer.Config.Output)
 		if err != nil {
 			log.Fatal(err)
 		}
