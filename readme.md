@@ -5,7 +5,21 @@
 
 <br/>
 
-#### Connect new organization
+####Futher development
+
+Fabchanger just works right now, but we must make the utility even simpler. For this purpose, it is necessary to simplify the creation of configuration artifacts: `configtx.yaml`, `crypto-config.yaml`, `connection.yaml`. Also we need eliminate dependency from `sign.sh` and integrate signing capability in fabchanger itself.   
+
+<br/>
+
+**Reference**
+ 
+ - [Connect new organization](#org)
+
+ - [Connect new RAFT orderer](#orderer)
+
+<br/>
+
+#### <a name=org>Connect new organization</a>
   1. Generate new crypto materials
   
       Add path to cryptogen bin to PATH env: 
@@ -45,7 +59,7 @@
          
          
 <br/><br/>         
-#### Connect new RAFT orderer
+#### <a name=orderer>Connect new RAFT orderer</a>
    1. Generate new crypto materials
      
          Add path to cryptogen bin to PATH env: 
