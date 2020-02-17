@@ -37,7 +37,6 @@ organizations:
     - peer1.org1.example.com
     certificateAuthorities:
     - ca.org1.example.com
-    -
 channels:
   mychannel:
     orderers:
@@ -69,22 +68,7 @@ peers:
   peer0.org1.example.com:
     url: grpcs://localhost:7051
     tlsCACerts:
-      pem: |
-        -----BEGIN CERTIFICATE-----
-        MIICWDCCAf6gAwIBAgIRAL5TY1cW0nL1jY0QCudF/QQwCgYIKoZIzj0EAwIwdjEL
-        MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
-        cmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHzAdBgNVBAMTFnRs
-        c2NhLm9yZzEuZXhhbXBsZS5jb20wHhcNMjAwMjEwMTIxMzAwWhcNMzAwMjA3MTIx
-        MzAwWjB2MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UE
-        BxMNU2FuIEZyYW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEfMB0G
-        A1UEAxMWdGxzY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49
-        AwEHA0IABP3X6h9ckn7Q1e+FuE4VnvoQRdK8BIO+LWYozeat+0NAAPXRqPQqTqzb
-        ZN4225sq+ihV6dNt+gU5ZnU1pVK7MjGjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNV
-        HSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNV
-        HQ4EIgQglxdd8N3/D0WJtHBbHoC7YD18ROck+NrPVAErTl+oNG8wCgYIKoZIzj0E
-        AwIDSAAwRQIhAKtaBOLyLFAT7zdm2okQcZ1mtCtoACyoJA1QfVZcMamHAiAtqYpo
-        54J3vGDm5MyjNbkpiWYr8ZyckSXcCXfVCLtDGw==
-        -----END CERTIFICATE-----
+      path: ${HOME}/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
     grpcOptions:
       ssl-target-name-override: peer0.org1.example.com
@@ -92,22 +76,7 @@ peers:
   peer1.org1.example.com:
     url: grpcs://localhost:8051
     tlsCACerts:
-      pem: |
-        -----BEGIN CERTIFICATE-----
-        MIICWDCCAf6gAwIBAgIRAL5TY1cW0nL1jY0QCudF/QQwCgYIKoZIzj0EAwIwdjEL
-        MAkGA1UEBhMCVVMxEzARBgNVBAgTCkNhbGlmb3JuaWExFjAUBgNVBAcTDVNhbiBG
-        cmFuY2lzY28xGTAXBgNVBAoTEG9yZzEuZXhhbXBsZS5jb20xHzAdBgNVBAMTFnRs
-        c2NhLm9yZzEuZXhhbXBsZS5jb20wHhcNMjAwMjEwMTIxMzAwWhcNMzAwMjA3MTIx
-        MzAwWjB2MQswCQYDVQQGEwJVUzETMBEGA1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UE
-        BxMNU2FuIEZyYW5jaXNjbzEZMBcGA1UEChMQb3JnMS5leGFtcGxlLmNvbTEfMB0G
-        A1UEAxMWdGxzY2Eub3JnMS5leGFtcGxlLmNvbTBZMBMGByqGSM49AgEGCCqGSM49
-        AwEHA0IABP3X6h9ckn7Q1e+FuE4VnvoQRdK8BIO+LWYozeat+0NAAPXRqPQqTqzb
-        ZN4225sq+ihV6dNt+gU5ZnU1pVK7MjGjbTBrMA4GA1UdDwEB/wQEAwIBpjAdBgNV
-        HSUEFjAUBggrBgEFBQcDAgYIKwYBBQUHAwEwDwYDVR0TAQH/BAUwAwEB/zApBgNV
-        HQ4EIgQglxdd8N3/D0WJtHBbHoC7YD18ROck+NrPVAErTl+oNG8wCgYIKoZIzj0E
-        AwIDSAAwRQIhAKtaBOLyLFAT7zdm2okQcZ1mtCtoACyoJA1QfVZcMamHAiAtqYpo
-        54J3vGDm5MyjNbkpiWYr8ZyckSXcCXfVCLtDGw==
-        -----END CERTIFICATE-----
+      path: ${HOME}/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
     grpcOptions:
       ssl-target-name-override: peer1.org1.example.com
