@@ -1,8 +1,9 @@
 general:
   identity: Admin
-  mspid: RZDMSP
-  channel: wheelsets
-  connectionProfile: /home/vadim/wheelsets-fabric/wheelsets-core/app/blockchain/fabric/config-dev-2orgs.yaml
+  mspid: Org2MSP
+  channel: mychannel
+  connectionProfile: /home/vadim/git/fabchanger/config/connection2.yaml
   configtxpath: $HOME/git/fabchanger/config
-  OrgToJoinMSP: VRK2 #OrdererOrg
-  myorg: RZD
+  OrgToJoinMSP: Org3MSP #OrdererOrg
+  myorg: Org2
+  clientcert: /home/vadim/git/fabchanger/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org3.example.com-cert.pem

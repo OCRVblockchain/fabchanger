@@ -25,6 +25,7 @@ type General struct {
 	ConfigTxPath      string
 	OrgToJoinMSP      string
 	MyOrg             string
+	ClientCert        string
 }
 
 func GetConfig() (*Config, error) {
