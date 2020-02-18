@@ -5,7 +5,7 @@
 
 <br/>
 
-####Futher development
+#### Futher development
 
 Fabchanger just works right now, but we must make the utility even simpler. For this purpose, it is necessary to simplify the creation of configuration artifacts: `configtx.yaml`, `crypto-config.yaml`, `connection.yaml`. Also we need eliminate dependency from `sign.sh` and integrate signing capability in fabchanger itself.   
 
