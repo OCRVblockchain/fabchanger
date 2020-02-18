@@ -607,6 +607,7 @@ func serializeIdentity(clientCert string, mspID string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	sId := &msp.SerializedIdentity{
 		Mspid:   mspID,
 		IdBytes: b,

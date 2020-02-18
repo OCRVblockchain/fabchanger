@@ -6,4 +6,4 @@ general:
   configtxpath: $HOME/git/fabchanger/config
   OrgToJoinMSP: Org3MSP #OrdererOrg
   myorg: Org2
-  clientcert: /home/vadim/git/fabchanger/config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org3.example.com-cert.pem
+  clientcert: /home/vadim/git/fabchanger/config/crypto-config/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp/signcerts/Admin@org2.example.com-cert.pem
