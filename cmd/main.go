@@ -27,7 +27,7 @@ func main() {
 	case "configtxtojson":
 		var topLevelConfig *genesisconfig.TopLevel
 		topLevelConfig = genesisconfig.LoadTopLevel(changer.Config.General.ConfigTxPath)
-		if changer.Config.General.OrgToJoinMSP != "" {
+		if changer.Config.Connect.OrgToJoinMSP != "" {
 			if err := changer.ConfigTxToJSON(changer.Config.Output, topLevelConfig); err != nil {
 				log.Fatalf("Error on printOrg: %s", err)
 			}
@@ -62,5 +62,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+	case "generate":
+		err = changer.GenerateConfigs()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
+
 }
