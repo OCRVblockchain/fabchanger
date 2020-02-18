@@ -20,13 +20,17 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
 <br/>
 
 #### <a name=org>Connect new organization</a>
-  1. Generate new crypto materials
+  1. Build Fabchanger:
   
-      Add path to cryptogen bin to PATH env: 
+         go build -o fabchanger cmd/main.go
+  
+  2. Generate new crypto materials
       
-         export PATH=$PATH:~/bin
-         
-      Edit `config/crypto-config.yaml` for your new configuration
+      Edit `config/config.yaml`
+     
+      Generate configs: 
+      
+          ./fabchanger --mode generate --join org
      
       Generate crypto materials:
         
@@ -34,68 +38,55 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
       
       Copy generated crypto materials to your main `crypto-config` directory
   
-  2. Create `configtx.yaml` in ./config dir using `configtx.yaml.org.sample` as sample and set config values in `/config.yaml`
   3. Run command:
       
          ./connectOrg.sh
   
   4. Sign configuration transaction
+     
+      Sign as admin specified in config/config.yaml:
       
-      Export environment variables:
-  
-         export ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
-         export CHANNEL_NAME=mychannel
-         export CORE_PEER_LOCALMSPID="Org1MSP"
-         export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
-         export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+         ./fabchanger --mode sign -f ./wrappedDelta.pb -o ./wrappedDelta.pb 
          
-      Sign:
-      
-         ./sign.sh cli sign
-         
-      Repeat this step for all orgs, then commit update transaction:
+      Repeat this step for all orgs (change credentials in config/config.yaml and run command specified above)
+       
+      Commit tx to orderer:
         
          ./sign.sh cli commit orderer.org.ru:7050
          
          
 <br/><br/>         
 #### <a name=orderer>Connect new RAFT orderer</a>
-   1. Generate new crypto materials
+   1. Build Fabchanger:
      
-         Add path to cryptogen bin to PATH env: 
-         
-            export PATH=$PATH:~/bin
-            
-         Edit `crypto-config.yaml` for your new configuration
+            go build -o fabchanger cmd/main.go
+     
+   2. Generate new crypto materials
+          
+       Edit `config/config.yaml`
         
-         Generate crypto materials:
-           
-            ./generate.sh
+       Generate configs: 
+       
+          ./fabchanger --mode generate --join orderer
+      
+       Generate crypto materials:
          
-         Copy generated crypto materials to your main `crypto-config` directory
-  2. Create `configtx.yaml` in ./config dir using `configtx.yaml.orderer.sample` as sample and set config values in `/config.yaml`
+          ./generate.sh
+         
+       Copy generated crypto materials to your main `crypto-config` directory
+       
   3. Run command:
       
          ./connectOrderer.sh
   
   4. Sign configuration transaction
-      
-      Export environment variables:
-  
-         export ORDERER_CA=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
-         export CHANNEL_NAME=mychannel
-         export CORE_PEER_LOCALMSPID="Org2MSP"
-         export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
-         export CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
-         
-      Sign:
-      
-         ./sign.sh cli sign
-         
-      Repeat this step for all orgs, then commit update transaction:
+       
+        Sign as admin specified in config/config.yaml:
         
-         export CORE_PEER_LOCALMSPID="OrdererMSP"
-         export CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/example.com/users/Admin@example.com/msp
-         ./sign.sh cli commit orderer.org.ru:7050
+           ./fabchanger --mode sign -f ./wrappedDelta.pb -o ./wrappedDelta.pb 
+           
+        Repeat this step for all orgs (change credentials in config/config.yaml and run command specified above)
          
-You can sign not only from the cli container, just replace first script arg `./sign.sh <container> <action>`
+        Commit tx to orderer:
+          
+           ./sign.sh cli commit orderer.org.ru:7050
