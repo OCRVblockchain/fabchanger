@@ -27,6 +27,7 @@ import (
 	"io/ioutil"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 )
 
@@ -43,10 +44,54 @@ func New() (*FabChanger, error) {
 	return &FabChanger{Config: configuration}, nil
 }
 
+func (f *FabChanger) GenerateConfigs() error {
+	if f.Config.Join == "orderer" {
+
+		configtx, err := ioutil.ReadFile("./config/configtx.yaml.orderer.template")
+		if err != nil {
+			return err
+		}
+
+		configtxNew := strings.Replace(string(configtx), "ORDERER", f.Config.Orderer, -1)
+		configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
+		if err = ioutil.WriteFile("./config/configtx.yaml", []byte(configtxNew), 0755); err != nil {
+			return err
+		}
+
+	} else if f.Config.Join == "org" {
+
+		configtx, err := ioutil.ReadFile("./config/configtx.yaml.org.template")
+		if err != nil {
+			return err
+		}
+
+		configtxNew := strings.Replace(string(configtx), "ORGMSP", f.Config.OrgToJoinMSP, -1)
+		configtxNew = strings.Replace(configtxNew, "ORG", f.Config.Connect.Org, -1)
+		configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
+		if err = ioutil.WriteFile("./config/configtx.yaml", []byte(configtxNew), 0755); err != nil {
+			return err
+		}
+	}
+
+	configtx, err := ioutil.ReadFile("./config/crypto-config.yaml.template")
+	if err != nil {
+		return err
+	}
+
+	configtxNew := strings.Replace(string(configtx), "ORGMSP", f.Config.OrgToJoinMSP, -1)
+	configtxNew = strings.Replace(configtxNew, "ORG", f.Config.Connect.Org, -1)
+	configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
+	if err = ioutil.WriteFile("./config/crypto-config.yaml", []byte(configtxNew), 0755); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (f *FabChanger) ConfigTxToJSON(JSONFileName string, t *genesisconfig.TopLevel) error {
 	if f.Config.Join == "org" {
 		for _, org := range t.Organizations {
-			if org.Name == f.Config.General.OrgToJoinMSP {
+			if org.Name == f.Config.Connect.OrgToJoinMSP {
 				og, err := encoder.NewOrdererOrgGroup(org)
 				if err != nil {
 					return errors.Wrapf(err, "bad org definition for org %s", org.Name)
@@ -89,7 +134,7 @@ func (f *FabChanger) ConfigTxToJSON(JSONFileName string, t *genesisconfig.TopLev
 		return nil
 	}
 
-	return errors.Errorf("organization %s not found", f.Config.General.OrgToJoinMSP)
+	return errors.Errorf("organization %s not found", f.Config.Connect.OrgToJoinMSP)
 
 }
 
