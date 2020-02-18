@@ -1,0 +1,10 @@
+PeerOrgs:
+  - Name: ORG
+    Domain: ORG.DOMAIN
+    EnableNodeOUs: true
+    Template:
+      Count: 2
+      # Start: 5
+      # Hostname: {{.Prefix}}{{.Index}} # default
+    Users:
+      Count: 1

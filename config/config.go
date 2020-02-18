@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	General
+	Connect
 	Mode        string
 	Join        string
 	Output      string
@@ -23,9 +24,15 @@ type General struct {
 	Channel           string
 	ConnectionProfile string
 	ConfigTxPath      string
-	OrgToJoinMSP      string
 	MyOrg             string
 	ClientCert        string
+}
+
+type Connect struct {
+	OrgToJoinMSP string
+	Org          string
+	Orderer      string
+	Domain       string
 }
 
 func GetConfig() (*Config, error) {

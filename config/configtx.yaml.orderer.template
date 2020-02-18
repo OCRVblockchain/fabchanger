@@ -5,7 +5,7 @@ Orderer: &OrdererDefaults
     OrdererType: etcdraft
 
     Addresses:
-      - orderer6.example.com:7050
+      - ORDERER.DOMAIN:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -29,15 +29,11 @@ Orderer: &OrdererDefaults
     # EtcdRaft defines configuration which must be set when the "etcdraft"
     # orderertype is chosen.
     EtcdRaft:
-        # The set of Raft replicas for this network. For the etcd/raft-based
-        # implementation, we expect every replica to also be an OSN. Therefore,
-        # a subset of the host:port items enumerated in this list should be
-        # replicated under the Orderer.Addresses key above.
         Consenters:
-            - Host: orderer6.example.com
+            - Host: ORDERER.DOMAIN
               Port: 7050
-              ClientTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer6.example.com/tls/server.crt
-              ServerTLSCert: crypto-config/ordererOrganizations/example.com/orderers/orderer6.example.com/tls/server.crt
+              ClientTLSCert: crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERER.DOMAIN/tls/server.crt
+              ServerTLSCert: crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERER.DOMAIN/tls/server.crt
 
   # Organizations is the list of orgs which are defined as participants on
   # the orderer side of the network

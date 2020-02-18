@@ -1,0 +1,19 @@
+Organizations:
+  - Name: ORGMSP
+    ID: ORGMSP
+    MSPDir: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/ORG.example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ORGMSP.admin', 'ORGMSP.peer', 'ORGMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('ORGMSP.admin', 'ORGMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('ORGMSP.admin')"
+
+    AnchorPeers:
+      - Host: peer0.ORG.DOMAIN
+        Port: 11051
