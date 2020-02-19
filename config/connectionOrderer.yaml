@@ -1,0 +1,109 @@
+name: first-network-org1
+version: 1.0.0
+client:
+  organization: OrdererOrg
+  connection:
+    timeout:
+      peer:
+        endorser: '300'
+  cryptoconfig:
+    path: ${HOME}/git/fabric-samples/first-network/crypto-config
+
+    # Some SDKs support pluggable KV stores, the properties under "credentialStore"
+    # are implementation specific
+  credentialStore:
+    path: /tmp/wheelsets-store
+
+      # [Optional]. Specific to the CryptoSuite implementation used by GO SDK. Software-based implementations
+      # requiring a key store. PKCS#11 based implementations does not.
+    cryptoStore:
+      path: /tmp/wheelsets-msp
+
+  BCCSP:
+    security:
+      enabled: true
+      default:
+        provider: "SW"
+      hashAlgorithm: "SHA2"
+      softVerify: true
+      level: 256
+
+organizations:
+  Org1:
+    mspid: Org1MSP
+    cryptoPath: peerOrganizations/org1.example.com/users/{userName}@org1.example.com/msp
+    peers:
+    - peer0.org1.example.com
+    - peer1.org1.example.com
+    certificateAuthorities:
+    - ca.org1.example.com
+  OrdererOrg:
+    mspid: OrdererMSP
+    cryptoPath: ordererOrganizations/example.com/users/{userName}@example.com/msp
+
+    certificateAuthorities:
+      - ca.org1.example.com
+channels:
+  mychannel:
+    orderers:
+      - orderer.example.com
+    peers:
+      peer0.org1.example.com: {}
+      peer1.org1.example.com: {}
+
+orderers:
+  orderer.example.com:
+    url: orderer.example.com:7050
+    grpcOptions:
+      ssl-target-name-override: orderer.example.com
+      # These parameters should be set in coordination with the keepalive policy on the server,
+      # as incompatible settings can result in closing of connection.
+      # When duration of the 'keep-alive-time' is set to 0 or less the keep alive client parameters are disabled
+      keep-alive-time: 0s
+      keep-alive-timeout: 20s
+      keep-alive-permit: false
+      fail-fast: false
+      # allow-insecure will be taken into consideration if address has no protocol defined, if true then grpc or else grpcs
+      allow-insecure: false
+
+    tlsCACerts:
+        # Certificate location absolute path
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+
+peers:
+  peer0.org1.example.com:
+    url: grpcs://localhost:7051
+    tlsCACerts:
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+    grpcOptions:
+      ssl-target-name-override: peer0.org1.example.com
+      hostnameOverride: peer0.org1.example.com
+  peer1.org1.example.com:
+    url: grpcs://localhost:8051
+    tlsCACerts:
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+    grpcOptions:
+      ssl-target-name-override: peer1.org1.example.com
+      hostnameOverride: peer1.org1.example.com
+certificateAuthorities:
+  ca.org1.example.com:
+    url: https://localhost:7054
+    caName: ca-org1
+    registrar:
+      enrollId: admin
+      enrollSecret: adminpw
+    tlsCACerts:
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+
+    httpOptions:
+      verify: false
+
+
+entityMatchers:
+  orderer:
+    - pattern: (\w*)orderer.example.com(\w*)
+      urlSubstitutionExp: orderer.example.com:7050
+      sslTargetOverrideUrlSubstitutionExp: orderer.example.com
+      mappedHost: orderer.example.com
