@@ -57,6 +57,7 @@ func New() (*FabChanger, error) {
 }
 
 func (f *FabChanger) GenerateConfigs() error {
+
 	if f.Config.Join == "orderer" {
 
 		configtx, err := ioutil.ReadFile("./config/configtx.yaml.orderer.template")
@@ -64,9 +65,20 @@ func (f *FabChanger) GenerateConfigs() error {
 			return err
 		}
 
-		configtxNew := strings.Replace(string(configtx), "ORDERER", f.Config.Orderer, -1)
+		configtxNew := strings.Replace(string(configtx), "ORDERERSTUB", f.Config.Orderer, -1)
 		configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
 		if err = ioutil.WriteFile("./config/configtx.yaml", []byte(configtxNew), 0755); err != nil {
+			return err
+		}
+
+		cryptoconfig, err := ioutil.ReadFile("./config/crypto-config.yaml.orderer.template")
+		if err != nil {
+			return err
+		}
+
+		cryptoconfigNew := strings.Replace(string(cryptoconfig), "ORDERER", f.Config.Orderer, -1)
+		cryptoconfigNew = strings.Replace(cryptoconfigNew, "DOMAIN", f.Config.Connect.Domain, -1)
+		if err = ioutil.WriteFile("./config/crypto-config.yaml", []byte(cryptoconfigNew), 0755); err != nil {
 			return err
 		}
 
@@ -83,25 +95,25 @@ func (f *FabChanger) GenerateConfigs() error {
 		if err = ioutil.WriteFile("./config/configtx.yaml", []byte(configtxNew), 0755); err != nil {
 			return err
 		}
-	}
 
-	configtx, err := ioutil.ReadFile("./config/crypto-config.yaml.template")
-	if err != nil {
-		return err
-	}
+		cryptoconfig, err := ioutil.ReadFile("./config/crypto-config.yaml.organization.template")
+		if err != nil {
+			return err
+		}
 
-	configtxNew := strings.Replace(string(configtx), "ORGMSP", f.Config.OrgToJoinMSP, -1)
-	configtxNew = strings.Replace(configtxNew, "ORG", f.Config.Connect.Org, -1)
-	configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
-	if err = ioutil.WriteFile("./config/crypto-config.yaml", []byte(configtxNew), 0755); err != nil {
-		return err
+		cryptoconfigNew := strings.Replace(string(cryptoconfig), "ORGMSP", f.Config.OrgToJoinMSP, -1)
+		cryptoconfigNew = strings.Replace(cryptoconfigNew, "ORG", f.Config.Connect.Org, -1)
+		cryptoconfigNew = strings.Replace(cryptoconfigNew, "DOMAIN", f.Config.Connect.Domain, -1)
+		if err = ioutil.WriteFile("./config/crypto-config.yaml", []byte(cryptoconfigNew), 0755); err != nil {
+			return err
+		}
 	}
 
 	// run cryptogen
 	cmd := exec.Command("cryptogen", "generate", "--config=./config/crypto-config.yaml")
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
-		return err
+		return errors.WithMessage(err, "cryptogen error")
 	}
 
 	if f.Config.Join == "org" {
@@ -110,7 +122,7 @@ func (f *FabChanger) GenerateConfigs() error {
 			return err
 		}
 	} else if f.Config.Join == "orderer" {
-		err = copy.Copy(path.Join("./crypto-config/ordererOrganizations", f.Config.Connect.Domain), path.Join(f.Config.Cryptopath, f.Config.Connect.Domain))
+		err = copy.Copy(path.Join("./crypto-config/ordererOrganizations", f.Config.Connect.Domain, "orderers"), path.Join(f.Config.Cryptopath, "ordererOrganizations", f.Config.Connect.Domain, "orderers"))
 		if err != nil {
 			return err
 		}
