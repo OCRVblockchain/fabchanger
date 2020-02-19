@@ -22,6 +22,7 @@ import (
 	"github.com/hyperledger/fabric/common/tools/protolator"
 	"github.com/hyperledger/fabric/common/tools/protolator/protoext/ordererext"
 	"github.com/hyperledger/fabric/common/util"
+	"github.com/hyperledger/fabric/core/comm"
 	"github.com/hyperledger/fabric/protoutil"
 	"github.com/pkg/errors"
 	"io/ioutil"
@@ -31,8 +32,16 @@ import (
 	"time"
 )
 
+var defaultConnTimeout = 3 * time.Second
+
 type FabChanger struct {
 	Config *config.Config
+}
+
+type CommonClient struct {
+	*comm.GRPCClient
+	Address string
+	sn      string
 }
 
 func New() (*FabChanger, error) {
@@ -488,7 +497,7 @@ func (f *FabChanger) Sign(input, output string) error {
 		return err
 	}
 
-	identitySerialized, err := serializeIdentity(f.Config.ClientCert, f.Config.MSPId)
+	identitySerialized, err := serializeIdentity(f.Config.General.ClientCert, f.Config.MSPId)
 	sigHeader := &cb.SignatureHeader{
 		Creator: identitySerialized,
 		Nonce:   nonce,
@@ -505,7 +514,7 @@ func (f *FabChanger) Sign(input, output string) error {
 
 	configUpdateEnv.Signatures = append(configUpdateEnv.Signatures, configSig)
 
-	EnvelopeSigned, err := CreateSignedEnvelope(f.Config.ClientCert, f.Config.MSPId, Client.PrivateKey(), f.Config.Identity, cb.HeaderType_CONFIG_UPDATE, f.Config.Channel, configUpdateEnv, SigningManager, 0, 0, nil)
+	EnvelopeSigned, err := CreateSignedEnvelope(f.Config.General.ClientCert, f.Config.MSPId, Client.PrivateKey(), f.Config.Identity, cb.HeaderType_CONFIG_UPDATE, f.Config.Channel, configUpdateEnv, SigningManager, 0, 0, nil)
 	if err != nil {
 		return err
 	}
@@ -535,6 +544,98 @@ func (f *FabChanger) Sign(input, output string) error {
 		return err
 	}
 	return nil
+}
+
+func (f *FabChanger) Update(input string) error {
+
+	fabConfig := fabricconfig.FromFile(f.Config.General.ConnectionProfile)
+
+	ConfigProvider, err := fabConfig()
+	if err != nil {
+		return err
+	}
+
+	// construct broadcast client
+	address, override, clientConfig, err := f.GetConfig(ConfigProvider)
+	if err != nil {
+		return errors.WithMessage(err, "failed to get broadcast config")
+	}
+
+	gClient, err := comm.NewGRPCClient(clientConfig)
+	if err != nil {
+		return errors.WithMessage(err, "failed to create OrdererClient from config")
+	}
+
+	oClient := &OrdererClient{
+		CommonClient: CommonClient{
+			GRPCClient: gClient,
+			Address:    address,
+			sn:         override}}
+
+	bc, err := oClient.Broadcast()
+	if err != nil {
+		return err
+	}
+
+	broadcastclient := &BroadcastGRPCClient{Client: bc}
+
+	// unmarshal envelope
+	fileBytes, err := ioutil.ReadFile(input)
+	if err != nil {
+		return err
+	}
+
+	var Envelope = &cb.Envelope{}
+	err = proto.Unmarshal(fileBytes, Envelope)
+
+	// broadcast
+	err = broadcastclient.Send(Envelope)
+	if err != nil {
+		return err
+	}
+	broadcastclient.Close()
+
+	return nil
+}
+
+func (f *FabChanger) GetConfig(ConfigBackends []core.ConfigBackend) (address, override string, clientConfig comm.ClientConfig, err error) {
+	orderers, ok := ConfigBackends[0].Lookup("orderers")
+	if !ok {
+		return "", "", comm.ClientConfig{}, errors.New("Can't to get orderer config")
+	}
+
+	ordererconf := orderers.(map[string]interface{})
+
+	address = f.Config.Broadcast.Address
+	override = ordererconf[f.Config.Broadcast.Domain].(map[string]interface{})["grpcoptions"].(map[string]interface{})["ssl-target-name-override"].(string)
+	clientConfig = comm.ClientConfig{}
+	clientConfig.Timeout = defaultConnTimeout
+	secOpts := comm.SecureOptions{
+		UseTLS:            f.Config.Broadcast.TLS,
+		RequireClientCert: f.Config.Broadcast.RequireClientCert,
+	}
+	if secOpts.UseTLS {
+		caPEM, err := ioutil.ReadFile(ordererconf[f.Config.Broadcast.Domain].(map[string]interface{})["tlscacerts"].(map[string]interface{})["path"].(string))
+		if err != nil {
+			return "", "", comm.ClientConfig{}, err
+		}
+		secOpts.ServerRootCAs = [][]byte{caPEM}
+	}
+	if secOpts.RequireClientCert {
+		keyPEM, err := ioutil.ReadFile(f.Config.Broadcast.ClientKey)
+		if err != nil {
+			return "", "", comm.ClientConfig{}, err
+		}
+		secOpts.Key = keyPEM
+		certPEM, err := ioutil.ReadFile(f.Config.Broadcast.ClientCert)
+		if err != nil {
+			return "", "", comm.ClientConfig{}, err
+		}
+		secOpts.Certificate = certPEM
+	}
+	clientConfig.SecOpts = secOpts
+
+	return
 }
 
 // CreateNonce generates a nonce using the common/crypto package.
