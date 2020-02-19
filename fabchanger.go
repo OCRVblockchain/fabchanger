@@ -24,9 +24,12 @@ import (
 	"github.com/hyperledger/fabric/common/util"
 	"github.com/hyperledger/fabric/core/comm"
 	"github.com/hyperledger/fabric/protoutil"
+	"github.com/otiai10/copy"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"os"
+	"os/exec"
+	"path"
 	"reflect"
 	"strings"
 	"time"
@@ -91,6 +94,30 @@ func (f *FabChanger) GenerateConfigs() error {
 	configtxNew = strings.Replace(configtxNew, "ORG", f.Config.Connect.Org, -1)
 	configtxNew = strings.Replace(configtxNew, "DOMAIN", f.Config.Connect.Domain, -1)
 	if err = ioutil.WriteFile("./config/crypto-config.yaml", []byte(configtxNew), 0755); err != nil {
+		return err
+	}
+
+	// run cryptogen
+	cmd := exec.Command("cryptogen", "generate", "--config=./config/crypto-config.yaml")
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+
+	if f.Config.Join == "org" {
+		err = copy.Copy("./crypto-config/peerOrganizations", path.Join(f.Config.Cryptopath, "peerOrganizations"))
+		if err != nil {
+			return err
+		}
+	} else if f.Config.Join == "orderer" {
+		err = copy.Copy(path.Join("./crypto-config/ordererOrganizations", f.Config.Connect.Domain), path.Join(f.Config.Cryptopath, f.Config.Connect.Domain))
+		if err != nil {
+			return err
+		}
+	}
+
+	err = os.RemoveAll("./crypto-config")
+	if err != nil {
 		return err
 	}
 
