@@ -5,7 +5,7 @@ Orderer: &OrdererDefaults
     OrdererType: etcdraft
 
     Addresses:
-      - ORDERER.DOMAIN:7050
+      - ORDERERSTUB.DOMAIN:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -30,10 +30,10 @@ Orderer: &OrdererDefaults
     # orderertype is chosen.
     EtcdRaft:
         Consenters:
-            - Host: ORDERER.DOMAIN
+            - Host: ORDERERSTUB.DOMAIN
               Port: 7050
-              ClientTLSCert: crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERER.DOMAIN/tls/server.crt
-              ServerTLSCert: crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERER.DOMAIN/tls/server.crt
+              ClientTLSCert: /home/vadim/git/fabric-samples/first-network/crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERERSTUB.DOMAIN/tls/server.crt
+              ServerTLSCert: /home/vadim/git/fabric-samples/first-network/crypto-config/ordererOrganizations/DOMAIN/orderers/ORDERERSTUB.DOMAIN/tls/server.crt
 
   # Organizations is the list of orgs which are defined as participants on
   # the orderer side of the network
