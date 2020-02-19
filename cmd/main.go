@@ -68,6 +68,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
+	case "update":
+		err = changer.Update(changer.Config.Input)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }
