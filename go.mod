@@ -13,6 +13,7 @@ require (
 	github.com/hyperledger/fabric-sdk-go v1.0.0-beta1
 	github.com/onsi/ginkgo v1.8.0
 	github.com/onsi/gomega v1.5.0
+	github.com/otiai10/copy v1.0.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/procfs v0.0.5 // indirect
 	github.com/sirupsen/logrus v1.4.1
