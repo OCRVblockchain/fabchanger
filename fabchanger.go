@@ -582,11 +582,6 @@ func CreateSignedEnvelope(
 		Nonce:   nonce,
 	}
 
-	payloadSignatureHeader = &cb.SignatureHeader{
-		Creator: []byte(identity),
-		Nonce:   nonce,
-	}
-
 	data, err := proto.Marshal(dataMsg)
 	if err != nil {
 		return nil, errors.Wrap(err, "error marshaling")
