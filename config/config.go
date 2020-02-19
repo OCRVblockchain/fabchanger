@@ -27,6 +27,7 @@ type General struct {
 	ConfigTxPath      string
 	MyOrg             string
 	ClientCert        string
+	Cryptopath        string
 }
 
 type Connect struct {
