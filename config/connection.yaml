@@ -62,13 +62,13 @@ orderers:
 
     tlsCACerts:
         # Certificate location absolute path
-      path: ${HOME}/git/fabric-samples/first-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem
 
 peers:
   peer0.org1.example.com:
     url: grpcs://localhost:7051
     tlsCACerts:
-      path: ${HOME}/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
     grpcOptions:
       ssl-target-name-override: peer0.org1.example.com
@@ -76,7 +76,7 @@ peers:
   peer1.org1.example.com:
     url: grpcs://localhost:8051
     tlsCACerts:
-      path: ${HOME}/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
     grpcOptions:
       ssl-target-name-override: peer1.org1.example.com
@@ -89,7 +89,7 @@ certificateAuthorities:
       enrollId: admin
       enrollSecret: adminpw
     tlsCACerts:
-      path: ${HOME}/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
+      path: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/tlsca/tlsca.org1.example.com-cert.pem
 
     httpOptions:
       verify: false
