@@ -31,14 +31,8 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
       Generate configs: 
       
           ./fabchanger --mode generate --join org
-     
-      Generate crypto materials:
-        
-         ./generate.sh
-      
-      Copy generated crypto materials to your main `crypto-config` directory
   
-  3. Create connection profile and address to it in `config/config.yaml`.
+  3. Create connection profile and refer to it from `config/config.yaml`.
   
   4. Run command:
       
@@ -54,7 +48,7 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
        
       Commit tx to orderer:
         
-         ./sign.sh cli commit orderer.org.ru:7050
+         ./fabchanger --mode update -f ./wrappedDelta.pb
          
          
 <br/><br/>         
@@ -70,14 +64,8 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
        Generate configs: 
        
           ./fabchanger --mode generate --join orderer
-      
-       Generate crypto materials:
-         
-          ./generate.sh
-         
-       Copy generated crypto materials to your main `crypto-config` directory
   
-  3. Create connection profile and address to it in `config/config.yaml`.
+  3. Create connection profile and refer to it from `config/config.yaml`.
        
   4. Run command:
       
@@ -93,4 +81,4 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
          
         Commit tx to orderer:
           
-           ./sign.sh cli commit orderer.org.ru:7050
+           ./fabchanger --mode update -f ./wrappedDelta.pb
