@@ -8,10 +8,20 @@ general:
   clientcert: /home/vadim/git/fabric-samples/first-network/crypto-config/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp/signcerts/Admin@org1.example.com-cert.pem
   cryptopath: /home/vadim/git/fabric-samples/first-network/crypto-config
 
+#general:
+#  identity: Admin
+#  mspid: OrdererMSP
+#  channel: mychannel
+#  connectionProfile: /home/vadim/git/fabchanger/config/connectionOrderer.yaml
+#  configtxpath: $HOME/git/fabchanger/config
+#  myorg: OrdererOrg
+#  clientcert: /home/vadim/git/fabric-samples/first-network/crypto-config/ordererOrganizations/example.com/users/Admin@example.com/msp/signcerts/Admin@example.com-cert.pem
+#  cryptopath: /home/vadim/git/fabric-samples/first-network/crypto-config
+
 connect:
   OrgToJoinMSP: Org8MSP #OrdererOrg
   Org: org8
-  Orderer: orderer7
+  Orderer: orderer8
   domain: example.com
 
 broadcast:
