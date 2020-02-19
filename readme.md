@@ -38,11 +38,13 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
       
       Copy generated crypto materials to your main `crypto-config` directory
   
-  3. Run command:
+  3. Create connection profile and address to it in `config/config.yaml`.
+  
+  4. Run command:
       
          ./connectOrg.sh
   
-  4. Sign configuration transaction
+  5. Sign configuration transaction
      
       Sign as admin specified in config/config.yaml:
       
@@ -74,12 +76,14 @@ Fabchanger just works right now, but we must make the utility even simpler. For 
           ./generate.sh
          
        Copy generated crypto materials to your main `crypto-config` directory
+  
+  3. Create connection profile and address to it in `config/config.yaml`.
        
-  3. Run command:
+  4. Run command:
       
          ./connectOrderer.sh
   
-  4. Sign configuration transaction
+  5. Sign configuration transaction
        
         Sign as admin specified in config/config.yaml:
         
