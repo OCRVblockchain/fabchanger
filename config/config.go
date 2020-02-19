@@ -10,6 +10,7 @@ import (
 type Config struct {
 	General
 	Connect
+	Broadcast
 	Mode        string
 	Join        string
 	Output      string
@@ -33,6 +34,15 @@ type Connect struct {
 	Org          string
 	Orderer      string
 	Domain       string
+}
+
+type Broadcast struct {
+	Address           string
+	Domain            string
+	TLS               bool
+	RequireClientCert bool
+	ClientKey         string
+	ClientCert        string
 }
 
 func GetConfig() (*Config, error) {
