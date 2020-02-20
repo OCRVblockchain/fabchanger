@@ -10,5 +10,5 @@ mkdir artifacts
 ./fabchanger --mode delta -f ./artifacts/configOrderer.pb -comparewith ./artifacts/merged.pb -o ./artifacts/delta.pb
 ./fabchanger --mode wrap -f ./artifacts/delta.pb -o wrappedDelta.pb
 rm -rf ./artifacts/
-
+rm ./block.pb
 
