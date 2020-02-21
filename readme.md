@@ -3,13 +3,7 @@
  
  Tool for _easy_ Hyperledger Fabric network reconfiguration by committing a new configuration transaction
 
-<br/>
-
-#### Futher development
-
-Fabchanger just works right now, but we must make the utility even simpler. For this purpose, it is necessary to simplify the creation of configuration artifacts: `configtx.yaml`, `crypto-config.yaml`, `connection.yaml`.  
-
-<br/>
+<br/><br/>
 
 **Reference**
  
